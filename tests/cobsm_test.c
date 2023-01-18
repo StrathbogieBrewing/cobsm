@@ -1,12 +1,18 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "../cobsm.h"
+#include "cobsm.h"
 
 #define CTEST_ENABLED
 #include "ctest.h"
+
+#define debug_print(fmt, ...)                                                                                          \
+    do {                                                                                                               \
+        if (DEBUG)                                                                                                     \
+            fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, __VA_ARGS__);                            \
+    } while (0)
 
 void ctest_callback(const char *name, int line) {
     if (line < 0) {
@@ -25,15 +31,24 @@ static uint8_t bin2hex(uint8_t bin) {
     }
 }
 
+static uint8_t puthex(uint8_t bin) {
+    putchar(bin2hex(bin >> 4));
+    putchar(bin2hex(bin));
+}
+
 void hexdump(const uint8_t buffer[], uint8_t size) {
     uint8_t index = 0;
-    putchar(bin2hex(size >> 4));
-    putchar(bin2hex(size));
-    putchar('\t');
+    puthex(size);
     while (index < size) {
-        putchar(bin2hex(buffer[index] >> 4));
-        putchar(bin2hex(buffer[index++]));
-        putchar(' ');
+        if (index & 0x0F) {
+            putchar(' ');
+        } else {
+            if(index){
+                putchar('\n');
+            }
+            putchar('\t');
+        }
+        puthex(bin2hex(buffer[index++]));
     }
     putchar('\n');
 }
